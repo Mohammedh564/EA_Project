@@ -110,13 +110,15 @@ def run_pso():
             toolbox.update(particle, best_global)
 
         print(f"Generation {gen+1} | Best Fitness: {best_global_fitness:.4f}")
-
+        print(f"num of Selected Features: {len(np.where(np.array(best_global) == 1)[0])}")
+        print("Accuracy:", 1 - best_global_fitness)
     selected_features = np.where(np.array(best_global) == 1)[0]
 
     print("\nBEST FEATURES:", selected_features)
     print("NUM FEATURES:", len(selected_features))
     print("BEST FITNESS:", best_global_fitness)
-
+    print("ACCURACY:", 1 - best_global_fitness)
+    print("NUMBER OF SELECTED FEATURES:", len(selected_features))
     # Plot the convergence
     plt.plot(best_fitness_history)
     plt.xlabel("Generation")
