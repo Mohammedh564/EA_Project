@@ -16,6 +16,8 @@ n_features = X_train.shape[1]
 POPULATION_SIZE = 30
 MAX_GENERATIONS = 50
 
+W = 0.7
+V_MAX = 6.0
 RANDOM_SEED = 42
 np.random.seed(RANDOM_SEED)
 
@@ -60,27 +62,27 @@ def evaluate(particle):
 toolbox.register("evaluate", evaluate)
 
 # UPDATE FUNCTION
-def updateParticle(particle, best):
+W = 0.7
+V_MAX = 6.0
 
+def updateParticle(particle, best):
     r1 = np.random.rand(n_features)
     r2 = np.random.rand(n_features)
 
     cognitive = c1 * r1 * (np.array(particle.best) - np.array(particle))
-    social = c2 * r2 * (np.array(best) - np.array(particle))
+    social    = c2 * r2 * (np.array(best) - np.array(particle))
 
-    particle.speed = particle.speed + cognitive + social
+    particle.speed = W * particle.speed + cognitive + social          # ✅ inertia
+    particle.speed = np.clip(particle.speed, -V_MAX, V_MAX)          # ✅ clamping
 
     prob = 1 / (1 + np.exp(-particle.speed))
-
     particle[:] = np.where(np.random.rand(n_features) < prob, 1, 0)
 
     if np.sum(particle) == 0:
         particle[np.random.randint(0, n_features)] = 1
 
-toolbox.register("update", updateParticle)
-
 # MAIN LOOP
-
+toolbox.register("update", updateParticle) 
 def run_pso():
     best_fitness_history = []
     population = toolbox.population(n=POPULATION_SIZE)
@@ -108,10 +110,16 @@ def run_pso():
         # update swarm
         for particle in population:
             toolbox.update(particle, best_global)
-
+        print("#"*40)
         print(f"Generation {gen+1} | Best Fitness: {best_global_fitness:.4f}")
+        print("-"*30)
+        print(f"Selected Features: {np.where(np.array(best_global) == 1)[0]}")
+        print("-"*30)
         print(f"num of Selected Features: {len(np.where(np.array(best_global) == 1)[0])}")
-        print("Accuracy:", 1 - best_global_fitness)
+        print("-"*30)
+        print(f"Accuracy: {1 - best_global_fitness:.2f}")
+        print("-"*30)
+        print("BEST FITNESS:", best_global_fitness)
     selected_features = np.where(np.array(best_global) == 1)[0]
 
     print("\nBEST FEATURES:", selected_features)
